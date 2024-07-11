@@ -1,99 +1,41 @@
 <template>
-    <div>
-        <h1>Video and Subtitle Merger</h1>
-        <form @submit.prevent="addToQueue">
-            <div>
-                <label for="video">Video File:</label>
-                <input type="file" id="video" ref="video" required />
-            </div>
-            <div>
-                <label for="subtitle">Subtitle File:</label>
-                <input type="file" id="subtitle" ref="subtitle" required />
-            </div>
-            <div>
-                <label for="hardware">Hardware:</label>
-                <select v-model="hardware">
-                    <option value="cpu">CPU</option>
-                    <option value="nvidia">NVIDIA</option>
-                    <option value="amd">AMD</option>
-                </select>
-            </div>
-            <button type="submit">Add to Queue</button>
-        </form>
-        <div v-if="progress > 0">
-            <progress :value="progress" max="100"></progress>
-            <p>{{ progress }}% Complete</p>
-        </div>
-        <div v-if="outputPath">
-            <a :href="outputPath" download>Download Merged Video</a>
-        </div>
-        <div v-if="queue.length">
-            <h2>Queue</h2>
-            <ul>
-                <li v-for="(item, index) in queue" :key="index">{{ item.video.name }} - {{ item.subtitle.name }}</li>
-            </ul>
-        </div>
-    </div>
+	<div class="min-h-screen bg-white text-black flex justify-center items-center">
+		<div class="max-w-3xl mx-auto p-8 border border-black">
+			<h1 class="text-4xl font-bold mb-8">Subsync Dashboard</h1>
+
+			<ul class="divide-y divide-white">
+				<li class="py-4 flex items-center">
+					<span class="inline-block w-4 h-4 bg-black mr-2"></span>
+					<router-link to="/qbit" class="block text-xl font-bold hover:underline">qBittorrent
+						Downloads</router-link>
+				</li>
+
+				<li class="py-4 flex items-center">
+					<span class="inline-block w-4 h-4 bg-black mr-2"></span>
+					<router-link to="/subsync" class="block text-xl font-bold hover:underline">Sync Subtitles To
+						Movie</router-link>
+				</li>
+
+				<li class="py-4 flex items-center">
+					<span class="inline-block w-4 h-4 bg-black mr-2"></span>
+					<router-link to="/options" class="block text-xl font-bold hover:underline">Options</router-link>
+				</li>
+			</ul>
+		</div>
+	</div>
 </template>
+  
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
-<script setup>
-import { ref } from 'vue';
-import { useFetch } from '#app';
-
-const video = ref(null);
-const subtitle = ref(null);
-const hardware = ref('cpu');
-const progress = ref(0);
-const outputPath = ref('');
-const queue = ref([]);
-
-const addToQueue = () => {
-    const videoFile = video.value.files[0];
-    const subtitleFile = subtitle.value.files[0];
-
-    queue.value.push({ video: videoFile, subtitle: subtitleFile, hardware: hardware.value });
-    processQueue();
-};
-
-const processQueue = async () => {
-    if (!queue.value.length) return;
-
-    const currentTask = queue.value[0];
-    const formData = new FormData();
-    formData.append('video', currentTask.video);
-    formData.append('subtitle', currentTask.subtitle);
-    formData.append('hardware', currentTask.hardware);
-
-    const { data, error } = await useFetch('/api/merge', {
-        method: 'POST',
-        body: formData,
-        onUploadProgress: (e) => {
-            if (e.lengthComputable) {
-                progress.value = (e.loaded / e.total) * 100;
-            }
-        },
-    });
-
-    if (error.value) {
-        console.error(error.value);
-    } else {
-        outputPath.value = data.value.outputPath;
-    }
-
-    queue.value.shift();
-    processQueue();
-};
-</script>
-
-<style>
-/* Add some basic styling */
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+body {
+	font-family: 'VT323', monospace;
 }
 
-button {
-    margin-top: 1rem;
+ul li span {
+	width: 0.5rem;
+	height: 0.5rem;
+	background-color: #000;
 }
 </style>
+  
